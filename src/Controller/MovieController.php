@@ -11,18 +11,6 @@ use App\Entity\Movie;
 class MovieController extends Controller
 {
     /**
-     * @Route("/lucky/number")
-     */
-    public function number()
-    {
-        $number = mt_rand(0, 100);
-
-        return new Response(
-            '<html><body>Lucky number: '.$number.'</body></html>'
-        );
-    }
-
-    /**
      * @Route("/savemovie", name="savemovie")
      */
     public function saveMovie()
@@ -59,11 +47,11 @@ class MovieController extends Controller
     }
 
     /**
-     * @Route("/movies/{id}", name="showmovie", requirements={"showmovie"="\d+"})
+     * @Route("/movies/{id}", name="showmovie", requirements={"id"="\d+"})
      */
     public function showMovie($id)
     {
-        $movie = $this->getDoctrine()->getRepository(Movie::class)->findById($id);
+        $movie = $this->getDoctrine()->getRepository(Movie::class)->findOneById($id);
 
         if(!$movie) {
             throw $this->createNotFoundException('No movies found for id '.$id.' :(');
@@ -73,5 +61,58 @@ class MovieController extends Controller
         $response = $serializer->serialize($movie,'json');
 
         return new Response('moober: ' . $response);
+    }
+
+    /**
+     * @Route("/movies/edit/{id}", name="updatemovie", requirements={"id"="\d+"})
+     */
+    public function updateMovie($id)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $movie = $em->getRepository(Movie::class)->findOneById($id);
+
+        if (!$movie) {
+            throw $this->createNotFoundException('No movie found for id '.$id.' :(');
+        }
+
+        $movie->setName('uus leffa');
+        $em->flush();
+
+        return $this->redirectToRoute('showmovie', array('id' => $movie->getId()));
+    }
+
+    /**
+     * @Route("/movies/delete/{id}", name="deletemovie", requirements={"id"="\d+"})
+     */
+    public function deleteMovie($id)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $movie = $em->getRepository(Movie::class)->findOneById($id);
+
+        if (!$movie) {
+            throw $this->createNotFoundException('No movie found for id '.$id.' :(');
+        }
+
+        $em->remove($movie);
+        $em->flush();
+
+        return $this->redirectToRoute('movies');
+    }
+
+    /**
+     * @Route("/movies/find/{year}", name="findmovies", requirements={"year"="\d+"})
+     */
+    public function findMovies($year)
+    {
+        $movies = $this->getDoctrine()->getRepository(Movie::class)->findAllAfterYear($year);
+
+        if (!$movies) {
+            throw $this->createNotFoundException('No movies :(');
+        }
+
+        $serializer = $this->get('jms_serializer');
+        $response = $serializer->serialize($movies, 'json');
+
+        return new Response('moobers found: '.count($movies));
     }
 }

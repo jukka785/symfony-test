@@ -38,6 +38,12 @@ class Movie
      */
     private $description;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Person", inversedBy="movies")
+     * @ORM\JoinColumn(nullable=true)
+     */
+    private $director;
+
     public function getId(): int
     {
         return $this->id;
@@ -81,5 +87,15 @@ class Movie
     public function getDescription(): string
     {
         return $this->description;
+    }
+
+    public function getDirector(): Person
+    {
+        return $this->director;
+    }
+
+    public function setDirector(Person $director)
+    {
+        $this->director = $director;
     }
 }

@@ -13,6 +13,15 @@ class MovieRepository extends ServiceEntityRepository
         parent::__construct($registry, Movie::class);
     }
 
+    public function findAllAfterYear($year)
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.year > :year')->setParameter('year', $year)
+            ->orderBy('m.year', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     /*
     public function findBySomething($value)
     {
