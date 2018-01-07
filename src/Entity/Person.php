@@ -49,9 +49,6 @@ class Person
         return $this->name;
     }
 
-    /**
-     * @return Collection|Movie[]
-     */
     public function getMovies()
     {
         return $this->movies;
