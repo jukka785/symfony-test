@@ -3,7 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PersonRepository")
@@ -17,22 +17,17 @@ class Person
      */
     private $id;
 
-    // add your own fields
-
     /**
      * @ORM\Column(type="string")
+     * @Assert\NotBlank(message="Name missing!")
+     * @Assert\Length(
+     *      min=1,
+     *      max=100,
+     *      minMessage="Name bust be at least {{ limit }} characters long",
+     *      maxMessage="Name cannot be longer than {{ limit }} characters long"
+     * )
      */
     private $name;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Movie", mappedBy="director")
-     */
-    private $movies;
-
-    public function __construct()
-    {
-        $this->movies = new ArrayCollection();
-    }
 
     public function getId(): int
     {
@@ -44,13 +39,8 @@ class Person
         $this->name = $name;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
-    }
-
-    public function getMovies()
-    {
-        return $this->movies;
     }
 }

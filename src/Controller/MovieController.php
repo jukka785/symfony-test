@@ -5,25 +5,40 @@ namespace App\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 use App\Entity\Movie;
 
 class MovieController extends Controller
 {
     /**
+     * @Route("/", name="index")
+     */
+    public function index()
+    {
+        return new Response(':)');
+    }
+
+    /**
      * @Route("/savemovie", name="savemovie")
      */
-    public function saveMovie()
+    public function saveMovie(ValidatorInterface $validator)
     {
         $em = $this->getDoctrine()->getManager();
 
         $movie = new Movie();
         $movie->setName('The Kiho');
-        $movie->setRating(5);
+        $movie->setRating(6);
         $movie->setDescription('Paras leffa');
 
-        $em->persist($movie);
+        $errors = $validator->validate($movie);
+        if (count($errors) > 0) {
+            $errorsString = (string) $errors;
 
+            return new Response($errorsString);
+        }
+
+        $em->persist($movie);
         $em->flush();
 
         return new Response('Saved new movie with id '.$movie->getId());
@@ -66,7 +81,7 @@ class MovieController extends Controller
     /**
      * @Route("/movies/edit/{id}", name="updatemovie", requirements={"id"="\d+"})
      */
-    public function updateMovie($id)
+    public function updateMovie($id, ValidatorInterface $validator)
     {
         $em = $this->getDoctrine()->getManager();
         $movie = $em->getRepository(Movie::class)->findOneById($id);
@@ -76,6 +91,14 @@ class MovieController extends Controller
         }
 
         $movie->setName('uus leffa');
+
+        $errors = $validator->validate($movie);
+        if (count($errors) > 0) {
+            $errorsString = (string) $errors;
+
+            return new Response($errorsString);
+        }
+
         $em->flush();
 
         return $this->redirectToRoute('showmovie', array('id' => $movie->getId()));
